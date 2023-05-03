@@ -2,15 +2,15 @@ import { Bytes } from "./bytes";
 import pako from "pako";
 
 // Minecraft Anvil Format
-class Region {
+export class Region {
 	constructor(public readonly data: Bytes) {}
 }
 
-class Chunk {
+export class Chunk {
 	constructor(public readonly data: Bytes) {}
 }
 
-class Block {
+export class Block {
 	public readonly namespace: string;
 	public readonly id: string;
 	public readonly name: string;
