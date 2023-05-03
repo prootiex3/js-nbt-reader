@@ -3,11 +3,21 @@ import pako from "pako";
 
 // Minecraft Anvil Format
 export class Region {
-	constructor(public readonly data: Bytes) {}
+	constructor() {}
+
+	static from(data: Bytes): Region {
+		const reader = data.reader();
+		return new Region();
+	}
 }
 
 export class Chunk {
-	constructor(public readonly data: Bytes) {}
+	constructor() {}
+
+	static from(data: Bytes): Chunk {
+		const reader = data.reader();
+		return new Chunk();
+	}
 }
 
 export class Block {
