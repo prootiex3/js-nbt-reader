@@ -5,12 +5,11 @@ export class Bytes {
 
 	// public:
 	constructor(...items: number[]) {
-		this.#m_data = [];
+		this.#m_data = items;
 		this.#m_length = 0;
 		for (const byte of items) {
 			if (typeof byte != "number")
 				throw new Error("Bytes expected type number in iterable.");
-			this.#m_data.push(byte);
 			Object.defineProperty(this, this.#m_length++, {
 				writable: false,
 				configurable: false,
@@ -59,12 +58,20 @@ export class Bytes {
 	}
 
 	as_int32(little_endian: boolean) {
-		const buf = Buffer.from(this.#m_data.slice(-4));
-		return little_endian ? buf.readInt32LE() : buf.readInt32BE();
+		if (this.#m_length >= 4) {
+			const buf = Buffer.from(this.#m_data.slice(-4));
+			return little_endian ? buf.readInt32LE() : buf.readInt32BE();
+		} else {
+			return this.#m_data.reduce((value, current) => value + current, 0);
+		}
 	}
 
-	as_number(little_endian = false) {
+	as_integer(little_endian = false) {
 		return this.as_int32(little_endian);
+	}
+
+	as_float() {
+		return 0.0;
 	}
 
 	as_hex() {
@@ -101,6 +108,10 @@ export class ByteReader {
 
 	is_eof() {
 		return this.#m_cursor >= this.#m_bytes.length;
+	}
+
+	get cursor() {
+		return this.#m_cursor;
 	}
 
 	get length() {

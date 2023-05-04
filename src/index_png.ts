@@ -29,7 +29,7 @@ function process_png(bytes: Bytes): PNG_Data {
 		pixels: RGBA[] = [],
 		chunks = 0;
 	main: while (!png_reader.is_eof()) {
-		const ch_length = png_reader.read(4)?.as_number();
+		const ch_length = png_reader.read(4)?.as_integer();
 		const ch_type = png_reader.read(4)?.as_string();
 		const ch_data = png_reader.read(ch_length!);
 		const ch_crc = png_reader.read(4)?.as_hex();
@@ -38,8 +38,8 @@ function process_png(bytes: Bytes): PNG_Data {
 		switch (ch_type) {
 			case "IHDR":
 				const ihdr = ch_data!.reader();
-				const ihdr_width = ihdr.read(4)?.as_number();
-				const ihdr_height = ihdr.read(4)?.as_number();
+				const ihdr_width = ihdr.read(4)?.as_integer();
+				const ihdr_height = ihdr.read(4)?.as_integer();
 				const ihdr_bit_depth = ihdr.consume();
 				const ihdr_color_type = ihdr.consume();
 				const ihdr_compression_method = ihdr.consume();
