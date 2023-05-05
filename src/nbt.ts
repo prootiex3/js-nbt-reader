@@ -1,6 +1,6 @@
-import pako from "pako";
 import { ByteReader, Bytes } from "./bytes";
 import { escape } from "querystring";
+import { decompress } from "./util";
 
 let iota = 0;
 const NBT_Type = Object.freeze({
@@ -26,6 +26,8 @@ class NBT_Byte {
 		public readonly name: string | null,
 		public readonly byte: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Short {
@@ -33,6 +35,8 @@ class NBT_Short {
 		public readonly name: string | null,
 		public readonly value: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Int {
@@ -40,6 +44,8 @@ class NBT_Int {
 		public readonly name: string | null,
 		public readonly value: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Long {
@@ -47,6 +53,8 @@ class NBT_Long {
 		public readonly name: string | null,
 		public readonly value: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Float {
@@ -54,6 +62,8 @@ class NBT_Float {
 		public readonly name: string | null,
 		public readonly value: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Double {
@@ -61,6 +71,8 @@ class NBT_Double {
 		public readonly name: string | null,
 		public readonly value: number
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Byte_Array {
@@ -69,6 +81,8 @@ class NBT_Byte_Array {
 		public readonly length: number,
 		public readonly data: Bytes
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_String {
@@ -76,6 +90,8 @@ class NBT_String {
 		public readonly name: string | null,
 		public readonly data: string
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_List {
@@ -84,6 +100,8 @@ class NBT_List {
 		public readonly length: number,
 		public readonly tags: NBT_Tag[]
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 class NBT_Compound {
@@ -91,6 +109,8 @@ class NBT_Compound {
 		public readonly name: string | null,
 		public readonly tags: NBT_Tag[]
 	) {}
+
+	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
 
 type NBT_Tag =
@@ -105,15 +125,6 @@ type NBT_Tag =
 	| NBT_String
 	| NBT_List
 	| NBT_Compound;
-
-function is_gzip_compressed(bytes: Bytes) {
-	try {
-		pako.ungzip(bytes.as_raw());
-		return true;
-	} catch (err) {
-		return false;
-	}
-}
 
 function read_nbt_byte(
 	reader: ByteReader,
@@ -306,10 +317,14 @@ export function read_nbt_tag(
 	}
 }
 
-export function read_nbt(bytes: Bytes): NBT_Compound {
-	const uncompressed_bytes = is_gzip_compressed(bytes)
-		? Bytes.from(pako.ungzip(bytes.as_raw()))
-		: bytes;
-	const reader = uncompressed_bytes.reader();
-	return read_nbt_tag(reader, true) as NBT_Compound;
+export class NBTParser {
+	constructor() {
+		throw new TypeError("Illegal constructor");
+	}
+
+	static from_bytes(bytes: Bytes): NBT_Compound {
+		const uncompressed_bytes = decompress(bytes);
+		const reader = uncompressed_bytes.reader();
+		return read_nbt_tag(reader, true) as NBT_Compound;
+	}
 }
