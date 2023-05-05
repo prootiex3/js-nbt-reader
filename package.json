@@ -1,14 +1,14 @@
 {
-  "name": "conypower",
+  "name": "nbt-js",
   "version": "1.0.0",
-  "description": "_playground",
+  "description": "NBT library written in typescript for fun.",
   "main": "src/index.ts",
   "scripts": {
     "ts": "clear && ts-node src/index.ts",
     "ts-png": "clear && ts-node src/index_png.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "ConyPower",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.4.0",
