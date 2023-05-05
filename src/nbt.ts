@@ -292,5 +292,8 @@ function read_nbt_tag(reader: ByteReader, should_read_name: boolean, type_id?: n
 
 export function parse_nbt(bytes: Bytes) {
 	const reader = decompress(bytes).reader();
-	return read_nbt_tag(reader, true);
+	const compound = read_nbt_tag(reader, true);
+	if (!(compound instanceof NBT_Compound))
+		throw new Error('NBT expected to start with compound tag but recieved something else.')
+	return compound;
 }
