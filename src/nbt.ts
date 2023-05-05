@@ -1,5 +1,4 @@
 import { ByteReader, Bytes } from "./bytes";
-import { escape } from "querystring";
 import { decompress } from "./util";
 
 let iota = 0;
@@ -17,244 +16,281 @@ const NBT_Type = Object.freeze({
 	COMPOUND: iota++,
 });
 
-class NBT_End {
-	constructor(public readonly name: string | null) {}
+function read_name(reader: ByteReader, should_read_name: boolean) {
+	if (!should_read_name) return null;
+	const name_length = reader.read(2)?.as_integer();
+	const name = reader.read(name_length!)?.as_string()!;
+	return name;
 }
 
-class NBT_Byte {
+class NBT_Tag {
+	static from_reader(reader: ByteReader, should_read_name: boolean) {}
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
+}
+
+class NBT_End extends NBT_Tag {
+	constructor(public readonly name: string | null) {
+		super();
+	}
+
+	static from_reader(reader: ByteReader, should_read_name: boolean) {}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
+}
+
+class NBT_Byte extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly byte: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const byte = reader.consume();
+		return new NBT_Byte(name, byte!);
+	}
+
+	override to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Short {
+class NBT_Short extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly value: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const value = reader.read(2)?.as_integer();
+		return new NBT_Long(name, value!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Int {
+class NBT_Int extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly value: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const value = reader.read(4)?.as_integer();
+		return new NBT_Long(name, value!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Long {
+class NBT_Long extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly value: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const value = reader.read(8)?.as_integer();
+		return new NBT_Long(name, value!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Float {
+class NBT_Float extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly value: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const value = reader.read(4)?.as_float();
+		return new NBT_Float(name, value!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Double {
+class NBT_Double extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly value: number
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const value = reader.read(8)?.as_double();
+		return new NBT_Float(name, value!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_Byte_Array {
+class NBT_Byte_Array extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly length: number,
 		public readonly data: Bytes
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const length = reader.read(4)?.as_integer();
+		const data = reader.read(length!);
+		return new NBT_Byte_Array(name, length!, data!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_String {
+class NBT_String extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: string
-	) {}
+	) {
+		super();
+	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const data_length = reader.read(2)?.as_integer();
+		const data = reader.read(data_length!)?.as_string();
+		return new NBT_String(name, data!);
+	}
+
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
 }
 
-class NBT_List {
+class NBT_List extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly type_id: number,
 		public readonly length: number,
 		public readonly tags: NBT_Tag[]
-	) {}
-
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
-}
-
-class NBT_Compound {
-	constructor(
-		public readonly name: string | null,
-		public readonly tags: NBT_Tag[]
-	) {}
-
-	get(name: string) {
-		return this.tags.find((tag: NBT_Tag) => tag.name == name);
+	) {
+		super();
 	}
 
-	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
-}
-
-type NBT_Tag =
-	| NBT_End
-	| NBT_Byte
-	| NBT_Short
-	| NBT_Int
-	| NBT_Long
-	| NBT_Float
-	| NBT_Double
-	| NBT_Byte_Array
-	| NBT_String
-	| NBT_List
-	| NBT_Compound;
-
-export class NBTParser {
-	constructor(bytes: Bytes) {
-		this.#m_bytes = decompress(bytes);
-		this.#m_reader = this.#m_bytes.reader();
-	}
-
-	parse(): NBT_Compound | null {
-		return this.read_nbt_tag(true) as NBT_Compound;
-	}
-
-	read_nbt_tag(should_read_name: boolean, type_id?: number): NBT_Tag {
-		const type = type_id ?? this.#m_reader.consume();
-		switch (type) {
-			case NBT_Type.END:
-				return new NBT_End(null);
-			case NBT_Type.BYTE:
-				return this.read_nbt_byte(should_read_name);
-			case NBT_Type.SHORT:
-				return this.read_nbt_short(should_read_name);
-			case NBT_Type.INT:
-				return this.read_nbt_int(should_read_name);
-			case NBT_Type.LONG:
-				return this.read_nbt_long(should_read_name);
-			case NBT_Type.FLOAT:
-				return this.read_nbt_float(should_read_name);
-			case NBT_Type.DOUBLE:
-				return this.read_nbt_double(should_read_name);
-			case NBT_Type.BYTE_ARRAY:
-				return this.read_nbt_byte_array(should_read_name);
-			case NBT_Type.STRING:
-				return this.read_nbt_string(should_read_name);
-			case NBT_Type.LIST:
-				return this.read_nbt_list(should_read_name);
-			case NBT_Type.COMPOUND:
-				return this.read_nbt_compound(should_read_name);
-			default:
-				throw new Error(
-					`Unexpected byte ${type} at data index ${
-						this.#m_reader.cursor
-					}`
-				);
-		}
-	}
-
-	consume_name(should_read_name: boolean) {
-		if (!should_read_name) return null;
-		const name_length = this.#m_reader.read(2)?.as_integer();
-		const name = this.#m_reader.read(name_length!)?.as_string()!;
-		return name;
-	}
-
-	// parse functions
-	read_nbt_byte(should_read_name: boolean): NBT_Byte {
-		const name = this.consume_name(should_read_name);
-		const byte = this.#m_reader.consume();
-		return new NBT_Byte(name!, byte!);
-	}
-
-	read_nbt_short(should_read_name: boolean): NBT_Short {
-		const name = this.consume_name(should_read_name);
-		const value = this.#m_reader.read(2)?.as_integer();
-		return new NBT_Short(name!, value!);
-	}
-
-	read_nbt_int(should_read_name: boolean): NBT_Int {
-		const name = this.consume_name(should_read_name);
-		const value = this.#m_reader.read(4)?.as_integer();
-		return new NBT_Int(name!, value!);
-	}
-
-	read_nbt_long(should_read_name: boolean): NBT_Long {
-		const name = this.consume_name(should_read_name);
-		const value = this.#m_reader.read(8)?.as_integer();
-		return new NBT_Long(name!, value!);
-	}
-
-	read_nbt_float(should_read_name: boolean): NBT_Float {
-		const name = this.consume_name(should_read_name);
-		const value = this.#m_reader.read(4)?.as_float();
-		return new NBT_Float(name!, value!);
-	}
-
-	read_nbt_double(should_read_name: boolean): NBT_Double {
-		const name = this.consume_name(should_read_name);
-		const value = this.#m_reader.read(8)?.as_double();
-		return new NBT_Double(name!, value!);
-	}
-
-	read_nbt_byte_array(should_read_name: boolean): NBT_Byte_Array {
-		const name = this.consume_name(should_read_name);
-		const length = this.#m_reader.read(4)?.as_integer();
-		const data = this.#m_reader.read(length!);
-		return new NBT_Byte_Array(name, length!, data!);
-	}
-
-	read_nbt_string(should_read_name: boolean): NBT_String {
-		const name = this.consume_name(should_read_name);
-		const data_length = this.#m_reader.read(2)?.as_integer();
-		const data = this.#m_reader.read(data_length!)?.as_string();
-		return new NBT_String(name!, data!);
-	}
-
-	read_nbt_list(should_read_name: boolean): NBT_List {
-		const name = this.consume_name(should_read_name);
-		const type_id = this.#m_reader.consume();
-		const length = this.#m_reader.read(4)?.as_integer();
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
+		const type_id = reader.consume();
+		const length = reader.read(4)?.as_integer();
 		const tags: NBT_Tag[] = [];
 		for (let i = 0; i < length!; ++i)
-			tags.push(this.read_nbt_tag(false, type_id!));
+			tags.push(read_nbt_tag(reader, false, type_id!));
 		return new NBT_List(name, type_id!, length!, tags);
 	}
 
-	read_nbt_compound(should_read_name: boolean): NBT_Compound {
-		const name = this.consume_name(should_read_name);
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
+}
+
+class NBT_Compound extends NBT_Tag {
+	constructor(
+		public readonly name: string | null,
+		public readonly tags: NBT_Tag[]
+	) {
+		super();
+	}
+
+	get(name: string) {
+		return this.tags
+			.filter((tag) => !(tag instanceof NBT_End))
+			.find((tag: NBT_Tag) => (tag as any).name == name);
+	}
+
+	static from_reader(reader: ByteReader, should_read_name: boolean) {
+		const name = read_name(reader, should_read_name);
 		const tags: NBT_Tag[] = [];
 		for (;;) {
-			const tag = this.read_nbt_tag(true);
+			const tag = read_nbt_tag(reader, true);
 			if (tag instanceof NBT_End) break;
 			tags.push(tag);
 		}
-		return new NBT_Compound(name!, tags);
+		return new NBT_Compound(name, tags);
 	}
 
-	// private:
-	#m_bytes: Bytes;
-	#m_reader: ByteReader;
+	to_bytes(): Bytes {
+		return new Bytes();
+	}
+}
+
+function read_nbt_tag(reader: ByteReader, should_read_name: boolean, type_id?: number): NBT_Tag {
+	const type = type_id ?? reader.consume();
+	switch (type) {
+		case NBT_Type.END:
+			return new NBT_End(null);
+		case NBT_Type.BYTE:
+			return NBT_Byte.from_reader(reader, should_read_name);
+		case NBT_Type.SHORT:
+			return NBT_Short.from_reader(reader, should_read_name);
+		case NBT_Type.INT:
+			return NBT_Int.from_reader(reader, should_read_name);
+		case NBT_Type.LONG:
+			return NBT_Long.from_reader(reader, should_read_name);
+		case NBT_Type.FLOAT:
+			return NBT_Float.from_reader(reader, should_read_name);
+		case NBT_Type.DOUBLE:
+			return NBT_Double.from_reader(reader, should_read_name);
+		case NBT_Type.BYTE_ARRAY:
+			return NBT_Byte_Array.from_reader(
+				reader,
+				should_read_name
+			);
+		case NBT_Type.STRING:
+			return NBT_String.from_reader(reader, should_read_name);
+		case NBT_Type.LIST:
+			return NBT_List.from_reader(reader, should_read_name);
+		case NBT_Type.COMPOUND:
+			return NBT_Compound.from_reader(reader, should_read_name);
+		default:
+			throw new Error(
+				`Unexpected byte ${type} at data index ${
+					reader.cursor
+				}`
+			);
+	}
+}
+
+
+export function parse_nbt(bytes: Bytes) {
+	const reader = decompress(bytes).reader();
+	return read_nbt_tag(reader, true);
 }

@@ -120,8 +120,17 @@ export class ByteReader {
 		return this.#m_cursor;
 	}
 
+	get bytes() {
+		return this.#m_bytes;
+	}
+
 	get length() {
 		return this.#m_bytes.length;
+	}
+
+	peek(): Optional<number> {
+		if (this.is_eof()) return null;
+		return this.#m_bytes[this.#m_cursor];
 	}
 
 	read(amount: number): Optional<Bytes> {
@@ -134,6 +143,7 @@ export class ByteReader {
 			return null;
 		}
 	}
+
 
 	consume(): Optional<number> {
 		const byte = this.read(1);
