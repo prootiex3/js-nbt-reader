@@ -38,7 +38,7 @@ class NBT_End extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.END);
 	}
 }
 
@@ -57,7 +57,7 @@ class NBT_Byte extends NBT_Tag {
 	}
 
 	override to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.BYTE);
 	}
 }
 
@@ -76,7 +76,7 @@ class NBT_Short extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.SHORT);
 	}
 }
 
@@ -95,7 +95,7 @@ class NBT_Int extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.INT);
 	}
 }
 
@@ -114,7 +114,7 @@ class NBT_Long extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.LONG);
 	}
 }
 
@@ -133,7 +133,7 @@ class NBT_Float extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.FLOAT);
 	}
 }
 
@@ -152,7 +152,7 @@ class NBT_Double extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.DOUBLE);
 	}
 }
 
@@ -173,7 +173,7 @@ class NBT_Byte_Array extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.BYTE_ARRAY);
 	}
 }
 
@@ -193,7 +193,7 @@ class NBT_String extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.STRING);
 	}
 }
 
@@ -218,7 +218,7 @@ class NBT_List extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.LIST);
 	}
 }
 
@@ -248,11 +248,15 @@ class NBT_Compound extends NBT_Tag {
 	}
 
 	to_bytes(): Bytes {
-		return new Bytes();
+		return new Bytes(NBT_Type.COMPOUND);
 	}
 }
 
-function read_nbt_tag(reader: ByteReader, should_read_name: boolean, type_id?: number): NBT_Tag {
+function read_nbt_tag(
+	reader: ByteReader,
+	should_read_name: boolean,
+	type_id?: number
+): NBT_Tag {
 	const type = type_id ?? reader.consume();
 	switch (type) {
 		case NBT_Type.END:
@@ -270,10 +274,7 @@ function read_nbt_tag(reader: ByteReader, should_read_name: boolean, type_id?: n
 		case NBT_Type.DOUBLE:
 			return NBT_Double.from_reader(reader, should_read_name);
 		case NBT_Type.BYTE_ARRAY:
-			return NBT_Byte_Array.from_reader(
-				reader,
-				should_read_name
-			);
+			return NBT_Byte_Array.from_reader(reader, should_read_name);
 		case NBT_Type.STRING:
 			return NBT_String.from_reader(reader, should_read_name);
 		case NBT_Type.LIST:
@@ -282,18 +283,17 @@ function read_nbt_tag(reader: ByteReader, should_read_name: boolean, type_id?: n
 			return NBT_Compound.from_reader(reader, should_read_name);
 		default:
 			throw new Error(
-				`Unexpected byte ${type} at data index ${
-					reader.cursor
-				}`
+				`Unexpected byte ${type} at data index ${reader.cursor}`
 			);
 	}
 }
-
 
 export function parse_nbt(bytes: Bytes) {
 	const reader = decompress(bytes).reader();
 	const compound = read_nbt_tag(reader, true);
 	if (!(compound instanceof NBT_Compound))
-		throw new Error('NBT expected to start with compound tag but recieved something else.')
+		throw new Error(
+			"NBT expected to start with compound tag but recieved something else."
+		);
 	return compound;
 }
