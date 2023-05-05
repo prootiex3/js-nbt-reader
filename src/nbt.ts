@@ -96,6 +96,7 @@ class NBT_String {
 
 class NBT_List {
 	constructor(
+		public readonly name: string | null,
 		public readonly typeId: number,
 		public readonly length: number,
 		public readonly tags: NBT_Tag[]
@@ -109,6 +110,10 @@ class NBT_Compound {
 		public readonly name: string | null,
 		public readonly tags: NBT_Tag[]
 	) {}
+
+	get(name: string) {
+		return this.tags.find((tag: NBT_Tag) => tag.name == name);
+	}
 
 	static from_bytes(bytes: Bytes, should_read_name: boolean) {}
 }
@@ -235,7 +240,7 @@ export class NBTParser {
 		const tags: NBT_Tag[] = [];
 		for (let i = 0; i < length!; ++i)
 			tags.push(this.read_nbt_tag(false, type_id!));
-		return new NBT_List(type_id!, length!, tags);
+		return new NBT_List(name, type_id!, length!, tags);
 	}
 
 	read_nbt_compound(should_read_name: boolean): NBT_Compound {
