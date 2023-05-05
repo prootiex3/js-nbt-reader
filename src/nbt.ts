@@ -97,7 +97,7 @@ class NBT_String {
 class NBT_List {
 	constructor(
 		public readonly name: string | null,
-		public readonly typeId: number,
+		public readonly type_id: number,
 		public readonly length: number,
 		public readonly tags: NBT_Tag[]
 	) {}
