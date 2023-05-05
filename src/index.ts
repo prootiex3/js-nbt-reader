@@ -13,7 +13,7 @@ const TEST_HELLO_WORLD =
 
 (async function main() {
 	console.clear();
-	const nbt_raw = await axios.get(TEST_BIGTEST, {
+	const nbt_raw = await axios.get(TEST_SERVERS_DAT, {
 		responseType: "arraybuffer",
 	});
 	if (nbt_raw.status != 200) throw new Error("Failed to fetch NBT file.");

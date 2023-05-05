@@ -170,95 +170,66 @@ export class NBTParser {
 		}
 	}
 
+	consume_name(should_read_name: boolean) {
+		if (!should_read_name) return null;
+		const name_length = this.#m_reader.read(2)?.as_integer();
+		const name = this.#m_reader.read(name_length!)?.as_string()!;
+		return name;
+	}
+
 	// parse functions
 	read_nbt_byte(should_read_name: boolean): NBT_Byte {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const byte = this.#m_reader.consume();
 		return new NBT_Byte(name!, byte!);
 	}
 
 	read_nbt_short(should_read_name: boolean): NBT_Short {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const value = this.#m_reader.read(2)?.as_integer();
 		return new NBT_Short(name!, value!);
 	}
 
 	read_nbt_int(should_read_name: boolean): NBT_Int {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const value = this.#m_reader.read(4)?.as_integer();
 		return new NBT_Int(name!, value!);
 	}
 
 	read_nbt_long(should_read_name: boolean): NBT_Long {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const value = this.#m_reader.read(8)?.as_integer();
 		return new NBT_Long(name!, value!);
 	}
 
 	read_nbt_float(should_read_name: boolean): NBT_Float {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const value = this.#m_reader.read(4)?.as_float();
 		return new NBT_Float(name!, value!);
 	}
 
 	read_nbt_double(should_read_name: boolean): NBT_Double {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
-		const value = this.#m_reader.read(8)?.as_float();
+		const name = this.consume_name(should_read_name);
+		const value = this.#m_reader.read(8)?.as_double();
 		return new NBT_Double(name!, value!);
 	}
 
 	read_nbt_byte_array(should_read_name: boolean): NBT_Byte_Array {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const length = this.#m_reader.read(4)?.as_integer();
 		const data = this.#m_reader.read(length!);
 		return new NBT_Byte_Array(name, length!, data!);
 	}
 
 	read_nbt_string(should_read_name: boolean): NBT_String {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const data_length = this.#m_reader.read(2)?.as_integer();
 		const data = this.#m_reader.read(data_length!)?.as_string();
 		return new NBT_String(name!, data!);
 	}
 
 	read_nbt_list(should_read_name: boolean): NBT_List {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
+		const name = this.consume_name(should_read_name);
 		const type_id = this.#m_reader.consume();
 		const length = this.#m_reader.read(4)?.as_integer();
 		const tags: NBT_Tag[] = [];
@@ -268,12 +239,7 @@ export class NBTParser {
 	}
 
 	read_nbt_compound(should_read_name: boolean): NBT_Compound {
-		let name: string | null = null;
-		if (should_read_name) {
-			const name_length = this.#m_reader.read(2)?.as_integer();
-			name = this.#m_reader.read(name_length!)?.as_string()!;
-		}
-		console.log(`Compound(name=${name == null ? null : `'${name}'`})`);
+		const name = this.consume_name(should_read_name);
 		const tags: NBT_Tag[] = [];
 		for (;;) {
 			const tag = this.read_nbt_tag(true);
