@@ -4,7 +4,8 @@
   "description": "_playground",
   "main": "src/index.ts",
   "scripts": {
-    "ts": "clear && ts-node src/index.ts"
+    "ts": "clear && ts-node src/index.ts",
+    "ts-png": "clear && ts-node src/index_png.ts"
   },
   "keywords": [],
   "author": "",
