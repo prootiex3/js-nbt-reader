@@ -26,7 +26,10 @@ export class Bytes {
 		return new Bytes(...iterable);
 	}
 
-	static compare(a: Bytes | number[] | Uint8Array, b: Bytes | number[] | Uint8Array) {
+	static compare(
+		a: Bytes | number[] | Uint8Array,
+		b: Bytes | number[] | Uint8Array
+	) {
 		if (a.length != b.length) return false;
 		for (let i = 0; i < a.length; ++i) if (a[i] != b[i]) return false;
 		return true;
@@ -139,17 +142,9 @@ export class ByteReader {
 		return this.#m_bytes[this.#m_cursor];
 	}
 
-	read(amount: number): Optional<Bytes> {
-		try {
-			return this.#m_bytes.slice(
-				this.#m_cursor,
-				(this.#m_cursor += amount)
-			);
-		} catch (err) {
-			return null;
-		}
+	read(amount: number) {
+		return this.#m_bytes.slice(this.#m_cursor, (this.#m_cursor += amount));
 	}
-
 
 	consume(): Optional<number> {
 		const byte = this.read(1);

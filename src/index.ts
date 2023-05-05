@@ -17,7 +17,6 @@ const TEST_HELLO_WORLD =
 		responseType: "arraybuffer",
 	});
 	if (nbt_raw.status != 200) throw new Error("Failed to fetch NBT file.");
-	const nbt_bytes = Bytes.from(new Uint8Array(nbt_raw.data as ArrayBuffer));
-	const nbt = parse_nbt(nbt_bytes);
+	const nbt = parse_nbt(new Uint8Array(nbt_raw.data as ArrayBuffer));
 	console.dir(nbt, { depth: Infinity });
 })();

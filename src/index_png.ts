@@ -19,7 +19,7 @@ interface PNG_Data {
 
 function process_png(bytes: Bytes): PNG_Data {
 	const png_reader = bytes.reader();
-	if (!Bytes.compare(png_reader.read(8)!, [137, 80, 78, 71, 13, 10, 26, 10]))
+	if (!Bytes.compare(png_reader.read(8), [137, 80, 78, 71, 13, 10, 26, 10]))
 		throw new TypeError(
 			"PNG header is either invalid or this is not a PNG."
 		);
@@ -29,17 +29,17 @@ function process_png(bytes: Bytes): PNG_Data {
 		pixels: RGBA[] = [],
 		chunks = 0;
 	main: while (!png_reader.is_eof()) {
-		const ch_length = png_reader.read(4)?.as_integer();
-		const ch_type = png_reader.read(4)?.as_string();
+		const ch_length = png_reader.read(4).as_integer();
+		const ch_type = png_reader.read(4).as_string();
 		const ch_data = png_reader.read(ch_length!);
-		const ch_crc = png_reader.read(4)?.as_hex();
+		const ch_crc = png_reader.read(4).as_hex();
 
 		chunks++;
 		switch (ch_type) {
 			case "IHDR":
 				const ihdr = ch_data!.reader();
-				const ihdr_width = ihdr.read(4)?.as_integer();
-				const ihdr_height = ihdr.read(4)?.as_integer();
+				const ihdr_width = ihdr.read(4).as_integer();
+				const ihdr_height = ihdr.read(4).as_integer();
 				const ihdr_bit_depth = ihdr.consume();
 				const ihdr_color_type = ihdr.consume();
 				const ihdr_compression_method = ihdr.consume();
@@ -52,14 +52,14 @@ function process_png(bytes: Bytes): PNG_Data {
 				break;
 			case "IDAT":
 				const idat = Bytes.from(
-					pako.inflate(ch_data?.as_raw()!)
+					pako.inflate(ch_data?.as_raw())
 				).reader();
 				assert(
 					idat.length % 4 == 0,
 					"Image data is not divisible by 4"
 				);
 				while (!idat.is_eof()) {
-					const [r, g, b, a] = idat.read(4)!;
+					const [r, g, b, a] = idat.read(4);
 					pixels.push({
 						r,
 						g,
