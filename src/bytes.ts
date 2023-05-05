@@ -18,12 +18,18 @@ export class Bytes {
 		}
 	}
 
+	get length() {
+		return this.#m_length;
+	}
+
 	static from(iterable: Iterable<number>) {
 		return new Bytes(...iterable);
 	}
 
-	get length() {
-		return this.#m_length;
+	static compare(a: Bytes | number[] | Uint8Array, b: Bytes | number[] | Uint8Array) {
+		if (a.length != b.length) return false;
+		for (let i = 0; i < a.length; ++i) if (a[i] != b[i]) return false;
+		return true;
 	}
 
 	is_empty() {

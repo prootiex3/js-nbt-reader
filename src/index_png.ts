@@ -1,6 +1,6 @@
 import axios from "axios";
 import pako from "pako";
-import { Optional, arr_compare } from "./util";
+import { Optional } from "./util";
 import { Bytes } from "./bytes";
 import assert from "assert";
 
@@ -19,7 +19,7 @@ interface PNG_Data {
 
 function process_png(bytes: Bytes): PNG_Data {
 	const png_reader = bytes.reader();
-	if (!arr_compare(png_reader.read(8)!, [137, 80, 78, 71, 13, 10, 26, 10]))
+	if (!Bytes.compare(png_reader.read(8)!, [137, 80, 78, 71, 13, 10, 26, 10]))
 		throw new TypeError(
 			"PNG header is either invalid or this is not a PNG."
 		);
