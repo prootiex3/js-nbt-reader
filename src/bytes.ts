@@ -66,12 +66,13 @@ export class Bytes {
 		}
 	}
 
-	as_integer(little_endian = false) {
-		return this.as_int32(little_endian);
+	as_float(little_endian = false) {
+		const buf = Buffer.from(this.#m_data);
+		return little_endian ? buf.readFloatLE() : buf.readFloatBE();
 	}
 
-	as_float() {
-		return 0.0;
+	as_integer(little_endian = false) {
+		return this.as_int32(little_endian);
 	}
 
 	as_hex() {
