@@ -16,15 +16,10 @@ const NBT_Type = Object.freeze({
 	COMPOUND: iota++,
 });
 
-function nbt_tag_name_from_type_id(type_id: number) {
-	return Object.keys(NBT_Type)[type_id];
-}
-
 function read_name(reader: ByteReader, should_read_name: boolean) {
 	if (!should_read_name) return null;
 	const name_length = reader.read(2).as_integer();
-	const name = reader.read(name_length!).as_string();
-	console.log(`name='${name}'`);
+	const name = reader.read(name_length).as_string();
 	return name;
 }
 
@@ -58,7 +53,7 @@ class NBT_Byte extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const byte = reader.consume();
-		return new NBT_Byte(name, byte!);
+		return new NBT_Byte(name, byte);
 	}
 
 	override to_bytes(): Bytes {
@@ -77,7 +72,7 @@ class NBT_Short extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const value = reader.read(2).as_integer();
-		return new NBT_Long(name, value!);
+		return new NBT_Short(name, value);
 	}
 
 	to_bytes(): Bytes {
@@ -96,7 +91,7 @@ class NBT_Int extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const value = reader.read(4).as_integer();
-		return new NBT_Long(name, value!);
+		return new NBT_Int(name, value);
 	}
 
 	to_bytes(): Bytes {
@@ -115,7 +110,7 @@ class NBT_Long extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const value = reader.read(8).as_integer();
-		return new NBT_Long(name, value!);
+		return new NBT_Long(name, value);
 	}
 
 	to_bytes(): Bytes {
@@ -134,7 +129,7 @@ class NBT_Float extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const value = reader.read(4).as_float();
-		return new NBT_Float(name, value!);
+		return new NBT_Float(name, value);
 	}
 
 	to_bytes(): Bytes {
@@ -153,7 +148,7 @@ class NBT_Double extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const value = reader.read(8).as_double();
-		return new NBT_Float(name, value!);
+		return new NBT_Float(name, value);
 	}
 
 	to_bytes(): Bytes {
@@ -164,7 +159,7 @@ class NBT_Double extends NBT_Tag {
 class NBT_Byte_Array extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
-		public readonly length: number,
+		public readonly size: number,
 		public readonly data: Bytes
 	) {
 		super();
@@ -172,9 +167,9 @@ class NBT_Byte_Array extends NBT_Tag {
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
-		const length = reader.read(4).as_integer();
-		const data = reader.read(length!);
-		return new NBT_Byte_Array(name, length!, data!);
+		const size = reader.read(4).as_integer();
+		const data = reader.read(size);
+		return new NBT_Byte_Array(name, size, data);
 	}
 
 	to_bytes(): Bytes {
@@ -192,9 +187,9 @@ class NBT_String extends NBT_Tag {
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
-		const data_length = reader.read(2).as_integer();
-		const data = reader.read(data_length!).as_string();
-		return new NBT_String(name, data!);
+		const length = reader.read(2).as_integer();
+		const data = reader.read(length).as_string();
+		return new NBT_String(name, data);
 	}
 
 	to_bytes(): Bytes {
@@ -206,7 +201,7 @@ class NBT_List extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly type_id: number,
-		public readonly length: number,
+		public readonly size: number,
 		public readonly tags: NBT_Tag[]
 	) {
 		super();
@@ -215,11 +210,11 @@ class NBT_List extends NBT_Tag {
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
 		const type_id = reader.consume();
-		const length = reader.read(4).as_integer();
+		const size = reader.read(4).as_integer();
 		const tags: NBT_Tag[] = [];
-		for (let i = 0; i < length!; ++i)
-			tags.push(read_nbt_tag(reader, false, type_id!));
-		return new NBT_List(name, type_id!, length!, tags);
+		for (let i = 0; i < size; ++i)
+			tags.push(read_nbt_tag(reader, false, type_id));
+		return new NBT_List(name, type_id, size, tags);
 	}
 
 	to_bytes(): Bytes {
@@ -263,7 +258,6 @@ function read_nbt_tag(
 	type_id?: number
 ): NBT_Tag {
 	const type = type_id ?? reader.consume();
-	console.log(nbt_tag_name_from_type_id(type_id!));
 	switch (type) {
 		case NBT_Type.END:
 			return new NBT_End(null);
@@ -295,8 +289,11 @@ function read_nbt_tag(
 }
 
 export function parse_nbt(bytes: Bytes | Uint8Array) {
-	const reader = decompress(
-		bytes instanceof Uint8Array ? Bytes.from(bytes) : bytes
+	const decompressed_bytes = decompress(bytes);
+	const reader = (
+		decompressed_bytes instanceof Bytes
+			? decompressed_bytes
+			: Bytes.from(decompressed_bytes)
 	).reader();
 	const compound = read_nbt_tag(reader, true);
 	if (!(compound instanceof NBT_Compound))
