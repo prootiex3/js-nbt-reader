@@ -18,6 +18,6 @@ const TEST_HELLO_WORLD =
 	});
 	if (nbt_raw.status != 200) throw new Error("Failed to fetch NBT file.");
 	const nbt_bytes = Bytes.from(new Uint8Array(nbt_raw.data as ArrayBuffer));
-	const nbt = NBTParser.from_bytes(nbt_bytes);
-	console.dir(nbt, { depth: Infinity });
+	const nbt = new NBTParser(nbt_bytes);
+	console.dir(nbt.parse(), { depth: Infinity });
 })();

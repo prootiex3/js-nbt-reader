@@ -71,6 +71,11 @@ export class Bytes {
 		return little_endian ? buf.readFloatLE() : buf.readFloatBE();
 	}
 
+	as_double(little_endian = false) {
+		const buf = Buffer.from(this.#m_data);
+		return little_endian ? buf.readDoubleLE() : buf.readDoubleBE();
+	}
+
 	as_integer(little_endian = false) {
 		return this.as_int32(little_endian);
 	}
