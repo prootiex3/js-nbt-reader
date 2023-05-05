@@ -39,7 +39,7 @@ export class Bytes {
 		return this.#m_length == 0;
 	}
 
-	slice(start: number = 0, end: number = this.#m_length) {
+	slice(start: number, end: number = this.#m_length) {
 		if (
 			end > this.#m_length ||
 			start > this.#m_length ||
@@ -66,13 +66,16 @@ export class Bytes {
 		return String.fromCharCode(...this);
 	}
 
-	as_int32(little_endian: boolean) {
-		if (this.#m_length >= 4) {
-			const buf = Buffer.from(this.#m_data.slice(-4));
-			return little_endian ? buf.readInt32LE() : buf.readInt32BE();
-		} else {
-			return this.#m_data.reduce((value, current) => value + current, 0);
-		}
+	as_integer32() {
+		return this.#m_data.reduce(
+			(value, current) => value * 256 + current,
+			0
+		);
+	}
+
+	as_integer() {
+		// idk if 64 bit integers are needed
+		return this.as_integer32();
 	}
 
 	as_float(little_endian = false) {
@@ -83,10 +86,6 @@ export class Bytes {
 	as_double(little_endian = false) {
 		const buf = Buffer.from(this.#m_data);
 		return little_endian ? buf.readDoubleLE() : buf.readDoubleBE();
-	}
-
-	as_integer(little_endian = false) {
-		return this.as_int32(little_endian);
 	}
 
 	as_hex() {
@@ -146,9 +145,8 @@ export class ByteReader {
 		return this.#m_bytes.slice(this.#m_cursor, (this.#m_cursor += amount));
 	}
 
-	consume(): Optional<number> {
-		const byte = this.read(1);
-		return byte == null ? null : byte[0];
+	consume(): number {
+		return this.read(1)[0];
 	}
 
 	// private:
