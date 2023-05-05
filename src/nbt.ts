@@ -178,9 +178,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const byte = this.#m_reader.consume();
-		console.log(
-			`Byte(name=${name == null ? null : `'${name}'`}) - ${byte}`
-		);
 		return new NBT_Byte(name!, byte!);
 	}
 
@@ -191,9 +188,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const value = this.#m_reader.read(2)?.as_integer();
-		console.log(
-			`Short(name=${name == null ? null : `'${name}'`}) - ${value}`
-		);
 		return new NBT_Short(name!, value!);
 	}
 
@@ -204,9 +198,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const value = this.#m_reader.read(4)?.as_integer();
-		console.log(
-			`Int(name=${name == null ? null : `'${name}'`}) - ${value}`
-		);
 		return new NBT_Int(name!, value!);
 	}
 
@@ -217,9 +208,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const value = this.#m_reader.read(8)?.as_integer();
-		console.log(
-			`Long(name=${name == null ? null : `'${name}'`}) - ${value}`
-		);
 		return new NBT_Long(name!, value!);
 	}
 
@@ -230,9 +218,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const value = this.#m_reader.read(4)?.as_float();
-		console.log(
-			`Float(name=${name == null ? null : `'${name}'`}) - ${value}`
-		);
 		return new NBT_Float(name!, value!);
 	}
 
@@ -242,10 +227,7 @@ export class NBTParser {
 			const name_length = this.#m_reader.read(2)?.as_integer();
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
-		const value = this.#m_reader.read(4)?.as_float();
-		console.log(
-			`Double(name=${name == null ? null : `'${name}'`}) - ${value}`
-		);
+		const value = this.#m_reader.read(8)?.as_float();
 		return new NBT_Double(name!, value!);
 	}
 
@@ -256,11 +238,6 @@ export class NBTParser {
 			name = this.#m_reader.read(name_length!)?.as_string()!;
 		}
 		const length = this.#m_reader.read(4)?.as_integer();
-		console.log(
-			`Byte_Array(name=${
-				name == null ? null : `'${name}'`
-			}) - (${length} bytes...)`
-		);
 		const data = this.#m_reader.read(length!);
 		return new NBT_Byte_Array(name, length!, data!);
 	}
@@ -273,11 +250,6 @@ export class NBTParser {
 		}
 		const data_length = this.#m_reader.read(2)?.as_integer();
 		const data = this.#m_reader.read(data_length!)?.as_string();
-		console.log(
-			`String(name=${name == null ? null : `'${name}'`}) - '${escape(
-				data!
-			)}'`
-		);
 		return new NBT_String(name!, data!);
 	}
 
@@ -290,7 +262,6 @@ export class NBTParser {
 		const type_id = this.#m_reader.consume();
 		const length = this.#m_reader.read(4)?.as_integer();
 		const tags: NBT_Tag[] = [];
-		console.log(`List(type_id=${type_id}, size=${length})`);
 		for (let i = 0; i < length!; ++i)
 			tags.push(this.read_nbt_tag(false, type_id!));
 		return new NBT_List(type_id!, length!, tags);
