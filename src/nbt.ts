@@ -206,7 +206,7 @@ export class NBT_List extends NBT_Tag {
 		public readonly name: string | null,
 		public readonly type_id: number,
 		public readonly size: number,
-		public readonly tags: NBT_Tag[]
+		public readonly data: NBT_Tag[]
 	) {
 		super();
 	}
@@ -215,10 +215,10 @@ export class NBT_List extends NBT_Tag {
 		const name = read_name(reader, should_read_name);
 		const type_id = reader.consume();
 		const size = reader.read(4).as_integer();
-		const tags: NBT_Tag[] = [];
+		const data: NBT_Tag[] = [];
 		for (let i = 0; i < size; ++i)
-			tags.push(read_nbt_tag(reader, false, type_id));
-		return new NBT_List(name, type_id, size, tags);
+			data.push(read_nbt_tag(reader, false, type_id));
+		return new NBT_List(name, type_id, size, data);
 	}
 
 	to_bytes(): Bytes {
@@ -229,14 +229,14 @@ export class NBT_List extends NBT_Tag {
 export class NBT_Compound extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
-		public readonly tags: NBT_Tag[]
+		public readonly data: NBT_Tag[]
 	) {
 		super();
 	}
 
 	get(name: string): NBT_Tag | null {
 		return (
-			this.tags
+			this.data
 				.filter((tag) => !(tag instanceof NBT_End))
 				.find((tag: NBT_Tag) => tag.name == name) ?? null
 		);
@@ -244,13 +244,13 @@ export class NBT_Compound extends NBT_Tag {
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
-		const tags: NBT_Tag[] = [];
+		const data: NBT_Tag[] = [];
 		for (;;) {
 			const tag = read_nbt_tag(reader, true);
 			if (tag instanceof NBT_End) break;
-			tags.push(tag);
+			data.push(tag);
 		}
-		return new NBT_Compound(name, tags);
+		return new NBT_Compound(name, data);
 	}
 
 	to_bytes(): Bytes {
