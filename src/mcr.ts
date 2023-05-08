@@ -1,5 +1,4 @@
 import { Bytes } from "./bytes";
-import pako from "pako";
 
 // Minecraft Anvil Format
 export class Region {

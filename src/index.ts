@@ -1,5 +1,4 @@
 import axios from "axios";
-import { Bytes } from "./bytes";
 import { parse_nbt } from "./nbt";
 
 const TEST_SERVERS_DAT =
