@@ -1,4 +1,5 @@
 import axios from "axios";
+import fs from "fs";
 import { parse_nbt } from "./nbt";
 
 const TEST_SERVERS_DAT =
@@ -10,12 +11,25 @@ const TEST_BIGTEST =
 const TEST_HELLO_WORLD =
 	"https://raw.github.com/Dav1dde/nbd/master/test/hello_world.nbt";
 
-(async function main() {
-	console.clear();
-	const nbt_raw = await axios.get(TEST_SERVERS_DAT, {
+async function from_url(url: string) {
+	const nbt_raw = await axios.get(url, {
 		responseType: "arraybuffer",
 	});
 	if (nbt_raw.status != 200) throw new Error("Failed to fetch NBT file.");
+	return nbt_raw;
+}
+
+async function from_file(file_path: string) {
+	const nbt_raw = fs.readFileSync(file_path);
+	return {
+		data: nbt_raw.buffer,
+	};
+}
+
+(async function main() {
+	console.clear();
+	// const nbt_raw = await from_url(TEST_SERVERS_DAT);
+	const nbt_raw = await from_file("data/level.dat");
 	const nbt = parse_nbt(new Uint8Array(nbt_raw.data as ArrayBuffer));
 	console.dir(nbt, { depth: Infinity });
 })();
