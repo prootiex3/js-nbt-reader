@@ -24,7 +24,7 @@ function read_name(reader: ByteReader, should_read_name: boolean) {
 }
 
 class NBT_Tag {
-	public readonly name: string | null;
+	public readonly name: string | null = null;
 	public readonly data: any;
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {}
