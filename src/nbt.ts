@@ -23,7 +23,7 @@ function read_name(reader: ByteReader, should_read_name: boolean) {
 	return name;
 }
 
-class NBT_Tag {
+export class NBT_Tag {
 	public readonly name: string | null = null;
 	public readonly data: any;
 
@@ -34,7 +34,7 @@ class NBT_Tag {
 	}
 }
 
-class NBT_End extends NBT_Tag {
+export class NBT_End extends NBT_Tag {
 	constructor(public readonly name: string | null) {
 		super();
 	}
@@ -46,7 +46,7 @@ class NBT_End extends NBT_Tag {
 	}
 }
 
-class NBT_Byte extends NBT_Tag {
+export class NBT_Byte extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -65,7 +65,7 @@ class NBT_Byte extends NBT_Tag {
 	}
 }
 
-class NBT_Short extends NBT_Tag {
+export class NBT_Short extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -84,7 +84,7 @@ class NBT_Short extends NBT_Tag {
 	}
 }
 
-class NBT_Int extends NBT_Tag {
+export class NBT_Int extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -103,7 +103,7 @@ class NBT_Int extends NBT_Tag {
 	}
 }
 
-class NBT_Long extends NBT_Tag {
+export class NBT_Long extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -122,7 +122,7 @@ class NBT_Long extends NBT_Tag {
 	}
 }
 
-class NBT_Float extends NBT_Tag {
+export class NBT_Float extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -141,7 +141,7 @@ class NBT_Float extends NBT_Tag {
 	}
 }
 
-class NBT_Double extends NBT_Tag {
+export class NBT_Double extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
@@ -160,7 +160,7 @@ class NBT_Double extends NBT_Tag {
 	}
 }
 
-class NBT_Byte_Array extends NBT_Tag {
+export class NBT_Byte_Array extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly size: number,
@@ -181,7 +181,7 @@ class NBT_Byte_Array extends NBT_Tag {
 	}
 }
 
-class NBT_String extends NBT_Tag {
+export class NBT_String extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: string
@@ -201,7 +201,7 @@ class NBT_String extends NBT_Tag {
 	}
 }
 
-class NBT_List extends NBT_Tag {
+export class NBT_List extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly type_id: number,
@@ -226,7 +226,7 @@ class NBT_List extends NBT_Tag {
 	}
 }
 
-class NBT_Compound extends NBT_Tag {
+export class NBT_Compound extends NBT_Tag {
 	constructor(
 		public readonly name: string | null,
 		public readonly tags: NBT_Tag[]
@@ -234,10 +234,12 @@ class NBT_Compound extends NBT_Tag {
 		super();
 	}
 
-	get(name: string) {
-		return this.tags
-			.filter((tag) => !(tag instanceof NBT_End))
-			.find((tag: NBT_Tag) => tag.name == name);
+	get(name: string): NBT_Tag | null {
+		return (
+			this.tags
+				.filter((tag) => !(tag instanceof NBT_End))
+				.find((tag: NBT_Tag) => tag.name == name) ?? null
+		);
 	}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
