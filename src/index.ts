@@ -1,6 +1,6 @@
 import axios from "axios";
 import fs from "fs";
-import { NBT_Compound, parse_nbt } from "./nbt";
+import { NBT_Compound, NBT_List, parse_nbt } from "./nbt";
 
 const TEST_SERVERS_DAT =
 	"https://github.com/Jake-E/go-serversdat/raw/master/examples/servers.dat";
@@ -37,6 +37,12 @@ function from_file(file_path: string): Promise<{ data: ArrayBufferLike }> {
 	const nbt = parse_nbt(new Uint8Array(nbt_raw.data as ArrayBuffer));
 	const data = nbt.get("Data")! as NBT_Compound;
 	const player = data.get("Player")! as NBT_Compound;
-	console.log(player);
+	const player_inventory = (player.get("Inventory")! as NBT_List).data;
+	for (const item of player_inventory) {
+		const id = (item as NBT_Compound).get("id");
+		const count = (item as NBT_Compound).get("Count");
+		console.log(`Player has ${count?.data} amount of ${id?.data}`);
+	}
+	// console.log(player);
 	// console.dir(nbt, { depth: Infinity });
 })();
