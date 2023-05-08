@@ -19,11 +19,15 @@ async function from_url(url: string) {
 	return nbt_raw;
 }
 
-async function from_file(file_path: string) {
-	const nbt_raw = fs.readFileSync(file_path);
-	return {
-		data: nbt_raw.buffer,
-	};
+function from_file(file_path: string): Promise<{ data: ArrayBufferLike }> {
+	return new Promise((resolve, reject) => {
+		fs.readFile(file_path, {}, (err, data: Buffer) => {
+			if (err != null) reject(err);
+			resolve({
+				data: data.buffer,
+			});
+		});
+	});
 }
 
 (async function main() {
