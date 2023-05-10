@@ -23,21 +23,8 @@ function read_name(reader: ByteReader, should_read_name: boolean) {
 	return name;
 }
 
-export class NBT_Tag {
-	public readonly name: string | null = null;
-	public readonly data: any;
-
-	static from_reader(reader: ByteReader, should_read_name: boolean) {}
-
-	to_bytes(): Bytes {
-		return new Bytes();
-	}
-}
-
-export class NBT_End extends NBT_Tag {
-	constructor(public readonly name: string | null) {
-		super();
-	}
+export class NBT_End {
+	constructor(public readonly name: string | null) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {}
 
@@ -46,13 +33,11 @@ export class NBT_End extends NBT_Tag {
 	}
 }
 
-export class NBT_Byte extends NBT_Tag {
+export class NBT_Byte {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -60,18 +45,16 @@ export class NBT_Byte extends NBT_Tag {
 		return new NBT_Byte(name, byte);
 	}
 
-	override to_bytes(): Bytes {
+	to_bytes(): Bytes {
 		return new Bytes(NBT_Type.BYTE);
 	}
 }
 
-export class NBT_Short extends NBT_Tag {
+export class NBT_Short {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -84,13 +67,11 @@ export class NBT_Short extends NBT_Tag {
 	}
 }
 
-export class NBT_Int extends NBT_Tag {
+export class NBT_Int {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -103,13 +84,11 @@ export class NBT_Int extends NBT_Tag {
 	}
 }
 
-export class NBT_Long extends NBT_Tag {
+export class NBT_Long {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -122,13 +101,11 @@ export class NBT_Long extends NBT_Tag {
 	}
 }
 
-export class NBT_Float extends NBT_Tag {
+export class NBT_Float {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -141,13 +118,11 @@ export class NBT_Float extends NBT_Tag {
 	}
 }
 
-export class NBT_Double extends NBT_Tag {
+export class NBT_Double {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: number
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -160,14 +135,12 @@ export class NBT_Double extends NBT_Tag {
 	}
 }
 
-export class NBT_Byte_Array extends NBT_Tag {
+export class NBT_Byte_Array {
 	constructor(
 		public readonly name: string | null,
 		public readonly size: number,
 		public readonly data: Bytes
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -181,13 +154,11 @@ export class NBT_Byte_Array extends NBT_Tag {
 	}
 }
 
-export class NBT_String extends NBT_Tag {
+export class NBT_String {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: string
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -201,15 +172,13 @@ export class NBT_String extends NBT_Tag {
 	}
 }
 
-export class NBT_List extends NBT_Tag {
+export class NBT_List {
 	constructor(
 		public readonly name: string | null,
 		public readonly type_id: number,
 		public readonly size: number,
 		public readonly data: NBT_Tag[]
-	) {
-		super();
-	}
+	) {}
 
 	static from_reader(reader: ByteReader, should_read_name: boolean) {
 		const name = read_name(reader, should_read_name);
@@ -226,13 +195,11 @@ export class NBT_List extends NBT_Tag {
 	}
 }
 
-export class NBT_Compound extends NBT_Tag {
+export class NBT_Compound {
 	constructor(
 		public readonly name: string | null,
 		public readonly data: NBT_Tag[]
-	) {
-		super();
-	}
+	) {}
 
 	get(name: string): NBT_Tag | null {
 		return (
@@ -257,6 +224,19 @@ export class NBT_Compound extends NBT_Tag {
 		return new Bytes(NBT_Type.COMPOUND);
 	}
 }
+
+type NBT_Tag =
+	| NBT_End
+	| NBT_Byte
+	| NBT_Short
+	| NBT_Int
+	| NBT_Long
+	| NBT_Float
+	| NBT_Double
+	| NBT_Byte_Array
+	| NBT_String
+	| NBT_List
+	| NBT_Compound;
 
 function read_nbt_tag(
 	reader: ByteReader,
